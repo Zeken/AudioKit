@@ -11,34 +11,36 @@ import AudioKitUI
 
 import UIKit
 
+import AVFoundation
+import CoreAudio
+
+import Foundation
+
 class ViewController: UIViewController {
 
-    var oscillator1 = AKOscillator()
-    var oscillator2 = AKOscillator()
-    var mixer = AKMixer()
+    var midiController = MidiController()
+
+    @IBOutlet weak var textView: UITextView!
 
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        mixer = AKMixer(oscillator1, oscillator2)
-
-        // Cut the volume in half since we have two oscillators
-        mixer.volume = 0.5
-        AudioKit.output = mixer
-        AudioKit.start()
+        let nc = NotificationCenter.default
+        nc.addObserver(forName:Notification.Name(rawValue:"samplerEvent"),
+                       object:nil, queue:nil,
+                       using:onSamplerEvent)
     }
-
-    @IBAction func toggleSound(_ sender: UIButton) {
-        if oscillator1.isPlaying {
-            oscillator1.stop()
-            oscillator2.stop()
-            sender.setTitle("Play Sine Waves", for: .normal)
-        } else {
-            oscillator1.frequency = random(in: 220 ... 880)
-            oscillator1.start()
-            oscillator2.frequency = random(in: 220 ... 880)
-            oscillator2.start()
-            sender.setTitle("Stop \(Int(oscillator1.frequency))Hz & \(Int(oscillator2.frequency))Hz", for: .normal)
+    
+    @objc func onSamplerEvent(notification:Notification) -> Void {
+        guard let userInfo = notification.userInfo,
+            let event = userInfo["event"] as? String,
+            let noteNumber = userInfo["noteNumber"] as? MIDINoteNumber,
+            let velocity   = userInfo["velocity"] as? MIDIVelocity,
+            let channel    = userInfo["channel"] as? MIDIChannel else {
+                print("No userInfo found in notification")
+                return
         }
+        let oldText = self.textView.text!
+        self.textView.text = "\(oldText)\nMidiProcessor.\(event)(\(noteNumber), \(velocity), \(channel))"
     }
 
 }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		59A3AA981FACB4DC000EB00E /* MidiController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59A3AA971FACB4DC000EB00E /* MidiController.swift */; };
 		C41702841C11954900AB689C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41702831C11954900AB689C /* AppDelegate.swift */; };
 		C41702861C11954900AB689C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41702851C11954900AB689C /* ViewController.swift */; };
 		C41702891C11954900AB689C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C41702871C11954900AB689C /* Main.storyboard */; };
@@ -34,6 +35,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		59A3AA971FACB4DC000EB00E /* MidiController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MidiController.swift; sourceTree = "<group>"; };
 		C41702801C11954900AB689C /* HelloWorld.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HelloWorld.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C41702831C11954900AB689C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C41702851C11954900AB689C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -84,6 +86,7 @@
 				C417028A1C11954900AB689C /* Assets.xcassets */,
 				C417028C1C11954900AB689C /* LaunchScreen.storyboard */,
 				C417028F1C11954900AB689C /* Info.plist */,
+				59A3AA971FACB4DC000EB00E /* MidiController.swift */,
 			);
 			path = HelloWorld;
 			sourceTree = "<group>";
@@ -132,6 +135,11 @@
 					C417027F1C11954900AB689C = {
 						CreatedOnToolsVersion = 7.2;
 						LastSwiftMigration = 0900;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -172,6 +180,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C41702861C11954900AB689C /* ViewController.swift in Sources */,
+				59A3AA981FACB4DC000EB00E /* MidiController.swift in Sources */,
 				C41702841C11954900AB689C /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
