@@ -6,7 +6,7 @@
 
 import AudioKit
 
-class MidiController: NSObject, AKMIDIListener {
+class MidiController: AKNode, AKMIDIListener {
 
     var midi = AKMIDI()
     var engine = AVAudioEngine()
@@ -26,8 +26,9 @@ class MidiController: NSObject, AKMIDIListener {
 
         initSampler()
 
-        engine.attach(samplerUnit)
-        engine.connect(samplerUnit, to: engine.outputNode)
+        avAudioNode = samplerUnit
+        engine.attach(avAudioNode)
+        engine.connect(avAudioNode, to: engine.outputNode)
         startEngine()
     }
 
