@@ -59,14 +59,14 @@ class MidiController: NSObject, AKMIDIListener {
 
     func receivedMIDINoteOn(noteNumber: MIDINoteNumber, velocity: MIDIVelocity, channel: MIDIChannel) {
         if velocity > 0 {
-            play(noteNumber: noteNumber, velocity: 127, channel: channel)
+            play(noteNumber: noteNumber, velocity: 127, channel: 0)
         } else {
-            stop(noteNumber: noteNumber, channel: channel)
+            stop(noteNumber: noteNumber, channel: 0)
         }
     }
 
     func receivedMIDINoteOff(noteNumber: MIDINoteNumber, velocity: MIDIVelocity, channel: MIDIChannel) {
-        stop(noteNumber: noteNumber, channel: channel)
+        stop(noteNumber: noteNumber, channel: 0)
     }
 
     func play(noteNumber: MIDINoteNumber, velocity: MIDIVelocity, channel: MIDIChannel) {
