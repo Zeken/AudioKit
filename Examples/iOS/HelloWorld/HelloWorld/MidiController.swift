@@ -6,11 +6,11 @@
 
 import AudioKit
 
-class MidiController: AKNode, AKMIDIListener {
+class MidiController: NSObject, AKMIDIListener {
 
     var midi = AKMIDI()
     var engine = AVAudioEngine()
-    var samplerUnit = AVAudioUnitSampler()
+    var sampler = AKSampler()
 
     override public init() {
         super.init()
@@ -21,24 +21,18 @@ class MidiController: AKNode, AKMIDIListener {
             name: .AVAudioSessionRouteChange,
             object: nil)
 
+        initSampler()
         midi.openInput()
         midi.addListener(self)
-
-        initSampler()
-
-        avAudioNode = samplerUnit
-        AudioKit.output = self
+        AudioKit.output = sampler
         AudioKit.start()
     }
 
     func initSampler() {
-        guard let url = Bundle.main.url(forResource: "piano", withExtension: "wav") else {
-            fatalError("file not found.")
-        }
         do {
-            try samplerUnit.loadAudioFiles(at: [url])
+            try sampler.loadWav("piano")
         } catch {
-            print("[Error] samplerUnit.loadAudioFiles()")
+            print("[MidiController.sampler] Couldn't load audio files")
         }
     }
 
@@ -62,7 +56,7 @@ class MidiController: AKNode, AKMIDIListener {
     }
 
     func play(noteNumber: MIDINoteNumber, velocity: MIDIVelocity, channel: MIDIChannel) {
-        samplerUnit.startNote(noteNumber, withVelocity: velocity, onChannel: channel)
+        sampler.play(noteNumber: noteNumber, velocity: velocity, channel: channel)
 
         // Dispatch notification to the main thread (for UI log update)
         DispatchQueue.main.async {
@@ -72,7 +66,7 @@ class MidiController: AKNode, AKMIDIListener {
     }
 
     func stop(noteNumber: MIDINoteNumber, channel: MIDIChannel) {
-        samplerUnit.stopNote(noteNumber, onChannel: channel)
+        sampler.stop(noteNumber: noteNumber, channel: channel)
         
         // Dispatch notification to the main thread (for UI log update)
         DispatchQueue.main.async {
