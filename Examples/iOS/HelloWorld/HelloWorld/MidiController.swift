@@ -27,9 +27,8 @@ class MidiController: AKNode, AKMIDIListener {
         initSampler()
 
         avAudioNode = samplerUnit
-        engine.attach(avAudioNode)
-        engine.connect(avAudioNode, to: engine.outputNode)
-        startEngine()
+        AudioKit.output = self
+        AudioKit.start()
     }
 
     func initSampler() {
@@ -42,23 +41,11 @@ class MidiController: AKNode, AKMIDIListener {
             print("[Error] samplerUnit.loadAudioFiles()")
         }
     }
-        
-    func startEngine() {
-        if (!engine.isRunning) {
-            do {
-                try self.engine.start()
-            } catch  {
-                fatalError("couldn't start engine.")
-            }
-        }
-    }
-    
+
     @objc func handleRouteChange(notification: NSNotification) {
-        self.engine.stop()
         let deadlineTime = DispatchTime.now() + .milliseconds(100)
         DispatchQueue.main.asyncAfter(deadline: deadlineTime) {
             self.initSampler()
-            self.startEngine()
         }
     }
 
