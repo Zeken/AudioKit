@@ -10,7 +10,7 @@ class MidiController: NSObject, AKMIDIListener {
 
     var midi = AKMIDI()
     var engine = AVAudioEngine()
-    var samplerUnit = AVAudioUnitSampler()
+    var samplerUnits = [AVAudioUnitSampler]()
 
     override public init() {
         super.init()
@@ -21,12 +21,18 @@ class MidiController: NSObject, AKMIDIListener {
             name: .AVAudioSessionRouteChange,
             object: nil)
 
-        initSampler(samplerUnit)
+        createSampler()
         midi.openInput()
         midi.addListener(self)
-        engine.attach(samplerUnit)
-        engine.connect(samplerUnit, to: engine.outputNode)
         startEngine()
+    }
+    
+    func createSampler() {
+        engine.disconnectNodeInput(self.engine.outputNode)
+        samplerUnits.append(AVAudioUnitSampler())
+        initSampler(samplerUnits.last!)
+        engine.attach(samplerUnits.last!)
+        engine.connect(samplerUnits.last!, to: engine.outputNode)
     }
     
     func initSampler(_ sampler: AVAudioUnitSampler) {
@@ -51,8 +57,10 @@ class MidiController: NSObject, AKMIDIListener {
     }
     
     @objc func handleRouteChange(notification: NSNotification) {
+        self.engine.stop()
         let deadlineTime = DispatchTime.now() + .milliseconds(100)
         DispatchQueue.main.asyncAfter(deadline: deadlineTime) {
+            self.createSampler()
             self.startEngine()
         }
     }
@@ -70,7 +78,8 @@ class MidiController: NSObject, AKMIDIListener {
     }
 
     func play(noteNumber: MIDINoteNumber, velocity: MIDIVelocity, channel: MIDIChannel) {
-        samplerUnit.startNote(noteNumber, withVelocity: velocity, onChannel: channel)
+        samplerUnits.last?.startNote(noteNumber, withVelocity: velocity, onChannel: channel)
+        print(samplerUnits.count)
 
         // Dispatch notification to the main thread (for UI log update)
         DispatchQueue.main.async {
@@ -80,7 +89,7 @@ class MidiController: NSObject, AKMIDIListener {
     }
 
     func stop(noteNumber: MIDINoteNumber, channel: MIDIChannel) {
-        samplerUnit.stopNote(noteNumber, onChannel: channel)
+        samplerUnits.last?.stopNote(noteNumber, onChannel: channel)
         
         // Dispatch notification to the main thread (for UI log update)
         DispatchQueue.main.async {
