@@ -10,7 +10,7 @@ class MidiController: NSObject, AKMIDIListener {
 
     var midi = AKMIDI()
     var engine = AVAudioEngine()
-    var samplerUnits = [AVAudioUnitSampler]()
+    var samplerUnit = AVAudioUnitSampler()
 
     override public init() {
         super.init()
@@ -21,26 +21,22 @@ class MidiController: NSObject, AKMIDIListener {
             name: .AVAudioSessionRouteChange,
             object: nil)
 
-        createSampler()
         midi.openInput()
         midi.addListener(self)
+
+        initSampler()
+
+        engine.attach(samplerUnit)
+        engine.connect(samplerUnit, to: engine.outputNode)
         startEngine()
     }
-    
-    func createSampler() {
-        engine.disconnectNodeInput(self.engine.outputNode)
-        samplerUnits.append(AVAudioUnitSampler())
-        initSampler(samplerUnits.last!)
-        engine.attach(samplerUnits.last!)
-        engine.connect(samplerUnits.last!, to: engine.outputNode)
-    }
-    
-    func initSampler(_ sampler: AVAudioUnitSampler) {
+
+    func initSampler() {
         guard let url = Bundle.main.url(forResource: "piano", withExtension: "wav") else {
             fatalError("file not found.")
         }
         do {
-            try sampler.loadAudioFiles(at: [url])
+            try samplerUnit.loadAudioFiles(at: [url])
         } catch {
             print("[Error] samplerUnit.loadAudioFiles()")
         }
@@ -60,7 +56,7 @@ class MidiController: NSObject, AKMIDIListener {
         self.engine.stop()
         let deadlineTime = DispatchTime.now() + .milliseconds(100)
         DispatchQueue.main.asyncAfter(deadline: deadlineTime) {
-            self.createSampler()
+            self.initSampler()
             self.startEngine()
         }
     }
@@ -78,8 +74,7 @@ class MidiController: NSObject, AKMIDIListener {
     }
 
     func play(noteNumber: MIDINoteNumber, velocity: MIDIVelocity, channel: MIDIChannel) {
-        samplerUnits.last?.startNote(noteNumber, withVelocity: velocity, onChannel: channel)
-        print(samplerUnits.count)
+        samplerUnit.startNote(noteNumber, withVelocity: velocity, onChannel: channel)
 
         // Dispatch notification to the main thread (for UI log update)
         DispatchQueue.main.async {
@@ -89,7 +84,7 @@ class MidiController: NSObject, AKMIDIListener {
     }
 
     func stop(noteNumber: MIDINoteNumber, channel: MIDIChannel) {
-        samplerUnits.last?.stopNote(noteNumber, onChannel: channel)
+        samplerUnit.stopNote(noteNumber, onChannel: channel)
         
         // Dispatch notification to the main thread (for UI log update)
         DispatchQueue.main.async {
