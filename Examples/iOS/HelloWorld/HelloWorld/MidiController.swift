@@ -21,50 +21,39 @@ class MidiController: NSObject, AKMIDIListener {
             name: .AVAudioSessionRouteChange,
             object: nil)
 
+        initSampler(samplerUnit)
         midi.openInput()
         midi.addListener(self)
         engine.attach(samplerUnit)
         engine.connect(samplerUnit, to: engine.outputNode)
+        startEngine()
+    }
+    
+    func initSampler(_ sampler: AVAudioUnitSampler) {
+        guard let url = Bundle.main.url(forResource: "piano", withExtension: "wav") else {
+            fatalError("file not found.")
+        }
         do {
-            try self.engine.start()
+            try sampler.loadAudioFiles(at: [url])
         } catch {
-            print(error)
+            print("[Error] samplerUnit.loadAudioFiles()")
+        }
+    }
+        
+    func startEngine() {
+        if (!engine.isRunning) {
+            do {
+                try self.engine.start()
+            } catch  {
+                fatalError("couldn't start engine.")
+            }
         }
     }
     
     @objc func handleRouteChange(notification: NSNotification) {
         let deadlineTime = DispatchTime.now() + .milliseconds(100)
         DispatchQueue.main.asyncAfter(deadline: deadlineTime) {
-
-            self.engine.stop()
-            self.engine.disconnectNodeInput(self.engine.outputNode)
-
-            guard let userInfo = notification.userInfo,
-                let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
-                let reason = AVAudioSessionRouteChangeReason(rawValue:reasonValue) else {
-                    return
-            }
-            switch reason {
-            case .newDeviceAvailable:
-                let session = AVAudioSession.sharedInstance()
-                for output in session.currentRoute.outputs where output.portType == AVAudioSessionPortHeadphones {
-                    print("Headphones connected")
-                }
-            case .oldDeviceUnavailable:
-                if let previousRoute =
-                    userInfo[AVAudioSessionRouteChangePreviousRouteKey] as? AVAudioSessionRouteDescription {
-                    for output in previousRoute.outputs where output.portType == AVAudioSessionPortHeadphones {
-                        print("Headphones disconnected")
-                    }
-                }
-            default: ()
-            }
-            self.engine.connect(self.samplerUnit, to: self.engine.outputNode)
-            do {
-                try self.engine.start()
-            } catch {
-                print(error)
-            }
+            self.startEngine()
         }
     }
 
