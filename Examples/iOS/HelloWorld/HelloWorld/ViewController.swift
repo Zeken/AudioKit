@@ -41,6 +41,7 @@ class ViewController: UIViewController {
         }
         let oldText = self.textView.text!
         self.textView.text = "\(oldText)\nMidiProcessor.\(event)(\(noteNumber), \(velocity), \(channel))"
+        self.textView.scrollRangeToVisible(NSMakeRange(self.textView.text.count - 1, 1))
     }
 
 }
